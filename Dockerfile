@@ -31,8 +31,7 @@ RUN python3 -m venv /opt/venv && \
   chown -R node:node /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN npm install -g pnpm yarn pm2 && \
-  chown -R node:node /usr/local/lib/node_modules /usr/local/bin
+RUN npm install -g pm2
 
 COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --chown=node:node ui/package.json ./ui/package.json
