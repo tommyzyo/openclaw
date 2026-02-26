@@ -21,14 +21,18 @@ RUN if [ -n "$OPENCLAW_DOCKER_APT_PACKAGES" ]; then \
 USER root
 RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  python3 python3-pip python3-venv tmux htop build-essential && \
-  python3 -m venv /opt/venv && \
-  /opt/venv/bin/pip install --no-cache-dir pandas numpy requests tushare ccxt scikit-learn && \
-  npm install -g pnpm yarn pm2 && \
-  chown -R node:node /opt/venv && \
+  python3 python3-pip python3-venv tmux htop build-essential \
+  python3-pandas python3-numpy python3-scipy python3-sklearn && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/venv && \
+  /opt/venv/bin/pip install --no-cache-dir requests tushare ccxt && \
+  chown -R node:node /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+
+RUN npm install -g pnpm yarn pm2 && \
+  chown -R node:node /usr/local/lib/node_modules /usr/local/bin
 
 COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY --chown=node:node ui/package.json ./ui/package.json
