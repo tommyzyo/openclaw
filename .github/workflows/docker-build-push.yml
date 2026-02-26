@@ -1,0 +1,42 @@
+name: 自定义智能量化集群 OpenClaw 镜像 (Elvis Sun Swarm 架构)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # 手动触发测试
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出当前定制环境配置
+        uses: actions/checkout@v4
+
+      - name: 收取 OpenClaw 最新的官方主干核心源码作为骨架
+        run: |
+          # （以默认的主干仓库为了示例，如果后续您看上了哪位大牛的代码，直接把克隆链接换成他的）
+          git clone --depth=1 https://github.com/Darko/OpenClaw.git ./openclaw-src || true
+          # 用我们特意加了量化工具链的 Dockerfile 覆盖掉普通原始环境包
+          cp ./Dockerfile ./openclaw-src/Dockerfile
+
+      - name: 设置 Docker 高级云端 Buildx 支持 (极大节约缓存空间)
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录到 Docker Hub 的私有储物柜
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🔥 云端服务器火力全开发起混合构建并上传
+        uses: docker/build-push-action@v5
+        with:
+          context: ./openclaw-src
+          push: true
+          # 动态匹配您的用户名，成品镜像包长这样：hurricane1983/openclaw-quant-swarm:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:latest
+          # 充分利用 GitHub 提供的高速云端缓存，下次构建秒开
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:buildcache,mode=max
