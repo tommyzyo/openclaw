@@ -265,15 +265,15 @@ function buildChatCommands(): ChatCommandDefinition[] {
     defineChatCommand({
       key: "session",
       nativeName: "session",
-      description: "Manage session-level settings (for example /session ttl).",
+      description: "Manage session-level settings (for example /session idle).",
       textAlias: "/session",
       category: "session",
       args: [
         {
           name: "action",
-          description: "ttl",
+          description: "idle | max-age",
           type: "string",
-          choices: ["ttl"],
+          choices: ["idle", "max-age"],
         },
         {
           name: "value",
@@ -320,9 +320,9 @@ function buildChatCommands(): ChatCommandDefinition[] {
       args: [
         {
           name: "action",
-          description:
-            "spawn | cancel | steer | close | sessions | status | set-mode | set | cwd | permissions | timeout | model | reset-options | doctor | install | help",
+          description: "Action to run",
           type: "string",
+          preferAutocomplete: true,
           choices: [
             "spawn",
             "cancel",
@@ -354,7 +354,8 @@ function buildChatCommands(): ChatCommandDefinition[] {
     defineChatCommand({
       key: "focus",
       nativeName: "focus",
-      description: "Bind this Discord thread (or a new one) to a session target.",
+      description:
+        "Bind this thread (Discord) or topic/conversation (Telegram) to a session target.",
       textAlias: "/focus",
       category: "management",
       args: [
@@ -369,7 +370,7 @@ function buildChatCommands(): ChatCommandDefinition[] {
     defineChatCommand({
       key: "unfocus",
       nativeName: "unfocus",
-      description: "Remove the current Discord thread binding.",
+      description: "Remove the current thread (Discord) or topic/conversation (Telegram) binding.",
       textAlias: "/unfocus",
       category: "management",
     }),
