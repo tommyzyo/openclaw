@@ -33,6 +33,9 @@ jobs:
           push: true
           # 动态匹配您的用户名，成品镜像包长这样：hurricane1983/openclaw-quant-swarm:latest
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:latest
+          # 激活内置的 Playwright Chromium 无头浏览器 (解锁 agent-browser / web截图 等能力)
+          build-args: |
+            OPENCLAW_INSTALL_BROWSER=1
           # 充分利用 GitHub 提供的高速云端缓存，下次构建秒开
           cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:buildcache
           cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:buildcache,mode=max
