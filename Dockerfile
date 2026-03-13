@@ -51,21 +51,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 COPY ui/package.json ./ui/package.json
 COPY patches ./patches
 
-# Inject Elvis Sun Swarm Swarm + Python Quant environment requirements
-USER root
-RUN apt-get update && \
-  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  python3 python3-pip python3-venv tmux htop build-essential \
-  python3-pandas python3-numpy python3-scipy python3-sklearn && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
-
-RUN python3 -m venv /opt/venv && \
-  /opt/venv/bin/pip install --no-cache-dir requests tushare ccxt && \
-  chown -R node:node /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-RUN npm install -g pm2
+# Inject Elvis Sun Swarm Swarm + Python Quant environment requirements (moved to final stage)
 
 COPY --from=ext-deps /out/ ./extensions/
 
@@ -142,6 +128,22 @@ RUN --mount=type=cache,id=openclaw-bookworm-apt-cache,target=/var/cache/apt,shar
       procps hostname curl git openssl
 
 RUN chown node:node /app
+
+# Inject Elvis Sun Swarm Swarm + Python Quant + NotebookLM environment requirements
+USER root
+RUN apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+  python3 python3-pip python3-venv tmux htop build-essential \
+  python3-pandas python3-numpy python3-scipy python3-sklearn && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/venv && \
+  /opt/venv/bin/pip install --no-cache-dir requests tushare ccxt notebooklm-py && \
+  chown -R node:node /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN npm install -g pm2
 
 COPY --from=runtime-assets --chown=node:node /app/dist ./dist
 COPY --from=runtime-assets --chown=node:node /app/node_modules ./node_modules
