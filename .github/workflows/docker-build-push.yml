@@ -1,0 +1,41 @@
+name: 自定义智能量化集群 OpenClaw 镜像 (Elvis Sun Swarm 架构)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # 手动触发测试
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出当前定制环境配置
+        uses: actions/checkout@v4
+
+      - name: 显示工作目录内容以备核查
+        run: ls -la
+
+      - name: 设置 Docker 高级云端 Buildx 支持 (极大节约缓存空间)
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录到 Docker Hub 的私有储物柜
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🔥 云端服务器火力全开发起混合构建并上传
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # 动态匹配您的用户名，成品镜像包长这样：hurricane1983/openclaw-quant-swarm:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:latest
+          # 激活内置的 Playwright Chromium 无头浏览器 (解锁 agent-browser / web截图 等能力)
+          build-args: |
+            OPENCLAW_INSTALL_BROWSER=1
+          # 充分利用 GitHub 提供的高速云端缓存，下次构建秒开
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:buildcache,mode=max
