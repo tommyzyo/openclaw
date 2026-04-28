@@ -1,0 +1,38 @@
+name: 自定义智能量化集群 OpenClaw 镜像 (Elvis Sun Swarm 架构)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # 手动触发测试
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出当前定制环境配置
+        uses: actions/checkout@v4
+
+      - name: 显示工作目录内容以备核查
+        run: ls -la
+
+      - name: 设置 Docker 高级云端 Buildx 支持
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录到 Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🔥 云端服务器火力全开发起混合构建并上传
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:latest
+          build-args: |
+            OPENCLAW_INSTALL_BROWSER=1
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/openclaw-quant-swarm:buildcache,mode=max
