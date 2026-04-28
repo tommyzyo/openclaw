@@ -36,8 +36,9 @@ RUN pip install --no-cache-dir \
     ccxt \
     scikit-learn
 
-# 全局安装 Node 端的集群控制和管理工具（如 pm2 有助于同时守护多个 Agent）
-RUN npm install -g pnpm yarn pm2
+# 使用 corepack 启用现代包管理器，并安装 pm2
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN npm install -g yarn pm2 --unsafe-perm
 
 WORKDIR /opt/openclaw
 # 把构建阶段的二进制或者项目代码复制过来（前提是在 Github Action 里预先下载进上下文了）
